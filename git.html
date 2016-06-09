@@ -1,0 +1,163 @@
+<html>
+<head>
+<style>
+body{
+	padding: 6%;
+	padding-top: 4%;
+}
+
+#addButton {
+	background: blue;
+	color: white;
+	border-radius: 5px;
+	height: 30px;
+	border: none;
+}
+
+#searchfield {
+	border-radius: 5px;
+	height: 30px;
+	border-style: none;
+	border: 1px solid #9b9b9b;
+	padding: 7px;
+}
+
+.card {
+	position: relative;
+	padding: 5px;
+	width: 240px;
+	border: 1px solid #9b9b9b;
+	display: inline-block;
+	margin-right: 30px;
+	margin-top: 30px;
+	border-radius: 5px;
+}
+
+.card:hover {
+	border: 2px blue solid;
+}
+
+p {
+	margin: 8px;
+	font-size: 14px;
+}
+
+img {
+	width: 100%;
+}
+
+.sortOptions {
+}
+
+.sortOptions:hover {
+	color: blue;
+	cursor: pointer;
+}
+
+.fa-caret-down:hover {
+	color: blue;
+}
+
+.fa-times {
+	position: absolute;
+	z-index:99;
+	right: 5px;
+	cursor: pointer;
+}
+</style>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.css" rel="stylesheet"/>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+</head>
+<body>
+
+<script>
+function getDetails() {
+	var xhttp = new XMLHttpRequest(),
+		input = $('#searchfield').prop("value"),
+		url = "https://api.github.com/users/" + input;
+  
+	if (input == "") {
+		alert("Please enter user id")
+	} else {
+		xhttp.onreadystatechange = function() {
+			if (xhttp.readyState == 4 && xhttp.status == 200) {
+				var data = JSON.parse(xhttp.responseText);
+		
+				var div1 = $('<div></div>').addClass("card");
+				var img = document.createElement("IMG");
+				img.setAttribute("src", data.avatar_url);
+				img.setAttribute("class", "photo");
+
+				var name = $('<p class="name"></p>').html("<strong>" + data.name + "</strong>"),
+					location = $('<p class="location"></p>').html("<strong>Location:</strong> " + data.location),
+					followers = $('<p class="followers"></p>').html("<strong>Followers:</strong> " + data.followers),
+					close = $('<i class="fa fa-times"></i>');
+		
+				$(div1).append(close);
+				$(div1).append(img);
+				$(div1).append(name);
+				$(div1).append(location);
+				$(div1).append(followers);
+		
+				$('#allCards').append(div1);
+				$('#searchfield').val("");
+			}
+		};
+	xhttp.open("GET", url, true);
+	xhttp.send();
+	}
+}
+
+$(document).on('click', '.fa-times', function(e) {
+	$(this).parent('.card').remove();
+})
+
+function sort(sortBy) {
+	$cardDiv = $('#allCards').children('div.card');
+
+	$cardDiv.sort(function(a,b){
+		var an, bn
+		if (sortBy == "name") {
+			an = a.children[2].innerHTML;
+			bn = b.children[2].innerHTML;
+		} else if (sortBy == "location") {
+			an = a.children[3].innerHTML;
+			bn = b.children[3].innerHTML;
+		} else {
+			an = a.children[4].innerHTML;
+			bn = b.children[4].innerHTML;
+		}
+			if(an > bn) {
+				return 1;
+			}
+			if(an < bn) {
+				return -1;
+			}
+			return 0;
+	});
+
+	$cardDiv.detach().appendTo($('#allCards'));
+}
+
+$(document).on('mouseover', '.card', function(){
+    $(this).children('p').css("text-decoration", "underline");
+	$(this).children('p').css("text-decoration-color", "blue");
+})
+
+$(document).on('mouseout','.card',function(){
+    $(this).children('p').css("text-decoration", "none");
+});
+
+</script>
+
+	<input type="text" id="searchfield" placeholder="github login"/>
+	<button type="button" id="addButton" onclick="getDetails()">Add</button>
+	<hr>
+	<div id="sortBy"> Sort By: 
+	<a class="sortOptions" onclick="sort('name')">Name <i class="fa fa-caret-down"></i></a>
+	<a class="sortOptions" onclick="sort('location')">Location <i class="fa fa-caret-down"></i></a>
+	<a class="sortOptions" onclick="sort()">Followers <i class="fa fa-caret-down"></i></a></div>
+	<div id="allCards">
+	</div>
+</body>
+</html>
